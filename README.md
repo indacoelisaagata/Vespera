@@ -33,7 +33,7 @@ The system operates as a two-stage decision engine:
 ### Quickstart
 
 ```bash
-git clone [https://github.com/indacoelisaagata/vespera.git](https://github.com/indacoelisaagata/vespera.git)
+git clone https://github.com/indacoelisaagata/vespera.git
 cd vespera
 pip install -r requirements.txt
 streamlit run app.py
