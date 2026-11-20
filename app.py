@@ -7,36 +7,38 @@ from engine import (
     simulate_opportunity_cost,
 )
 
+# --- PAGE CONFIGURATION ---
 st.set_page_config(
-    page_title="Vespera — Behavioral & Quantitative Wealth",
-    page_icon="◈",
+    page_title="vespera — Behavioral & Quantitative Wealth",
+    page_icon="✦",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
 
+# --- DESIGN SYSTEM CSS INJECTION (QUIET LUXURY / ALL-OUTFIT) ---
 st.markdown(
     """
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
 
     :root {
-        --bg-primary: #F9F9F8;
+        --bg-primary: #FAF8F9;
         --surface: #FFFFFF;
-        --border-subtle: #E5E5E0;
-        --text-primary: #111111;
-        --text-secondary: #6E6E73;
-        --accent-forest: #0F3D3E;
-        --accent-terracotta: #B85042;
+        --border-subtle: #EAE2E6;
+        --text-primary: #1E161A;
+        --text-secondary: #685860;
+        --accent-plum: #8A244E;
+        --accent-coral: #D9534F;
     }
 
-    html, body, [class*="css"] {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        background-color: var(--bg-primary);
+    html, body, [class*="css"], .stApp, p, span, label, div, input, select, button, li {
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif !important;
+        font-style: normal !important;
         color: var(--text-primary);
     }
 
     .stApp {
-        background-color: var(--bg-primary);
+        background-color: var(--bg-primary) !important;
     }
 
     /* Hide default Streamlit chrome */
@@ -44,122 +46,280 @@ st.markdown(
     footer {visibility: hidden;}
     header {visibility: hidden;}
 
+    /* Headings & Subtitles */
+    .stMarkdown h1, .stMarkdown h2, .stMarkdown h3, .stMarkdown h4 {
+        font-family: 'Outfit', sans-serif !important;
+        color: #1E161A !important;
+        font-weight: 600 !important;
+        font-size: 1.22rem !important;
+        letter-spacing: -0.015em !important;
+        margin-bottom: 0.2rem !important;
+    }
+    .stCaption, [data-testid="stCaptionContainer"] p {
+        font-family: 'Outfit', sans-serif !important;
+        font-weight: 400 !important;
+        color: #685860 !important;
+        font-size: 0.88rem !important;
+    }
+
     /* Brand Header */
     .vespera-header {
         display: flex;
         justify-content: space-between;
-        align-items: baseline;
-        padding: 1.2rem 0 1.8rem 0;
-        border-bottom: 1px solid var(--border-subtle);
-        margin-bottom: 2rem;
+        align-items: center;
+        padding: 1.1rem 1.6rem;
+        background-color: #FFFFFF;
+        border: 1px solid var(--border-subtle);
+        border-radius: 16px;
+        margin-bottom: 1.8rem;
+        box-shadow: 0 2px 12px rgba(30, 22, 26, 0.03);
     }
     .vespera-logo {
-        font-size: 1.65rem;
-        font-weight: 600;
-        letter-spacing: -0.03em;
-        color: var(--text-primary);
+        font-family: 'Outfit', sans-serif !important;
+        font-size: 1.85rem;
+        font-weight: 700;
+        letter-spacing: -0.035em;
+        color: #8A244E !important;
     }
-    .vespera-tagline {
-        font-size: 0.85rem;
-        color: var(--text-secondary);
-        letter-spacing: 0.02em;
+    .vespera-badge {
+        font-family: 'Outfit', sans-serif !important;
+        background-color: #F6EEF2;
+        color: #8A244E !important;
+        font-size: 0.74rem;
+        font-weight: 600;
+        padding: 0.4rem 0.9rem;
+        border-radius: 999px;
+        letter-spacing: 0.05em;
         text-transform: uppercase;
+        border: 1px solid #E5D4DC;
     }
 
-    /* Institutional Cards */
+    /* KPI Cards */
     .v-card {
         background-color: var(--surface);
         border: 1px solid var(--border-subtle);
-        border-radius: 6px;
-        padding: 1.5rem;
-        margin-bottom: 1.2rem;
+        border-radius: 16px;
+        padding: 1.45rem 1.55rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 14px rgba(30, 22, 26, 0.025);
     }
     .v-label {
-        font-size: 0.75rem;
+        font-size: 0.74rem;
         text-transform: uppercase;
         letter-spacing: 0.06em;
-        color: var(--text-secondary);
+        color: #75646C !important;
         margin-bottom: 0.4rem;
-        font-weight: 500;
+        font-weight: 600;
     }
     .v-metric {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 2.1rem;
-        font-weight: 500;
-        color: var(--text-primary);
-        letter-spacing: -0.02em;
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #1E161A !important;
+        letter-spacing: -0.025em;
+        line-height: 1.15;
     }
     .v-sub {
-        font-size: 0.82rem;
-        color: var(--text-secondary);
-        margin-top: 0.3rem;
+        font-size: 0.85rem;
+        color: #685860 !important;
+        margin-top: 0.4rem;
     }
 
-    /* Rebalancing Verdict Banner */
+    /* Form Container & Unified Clean Inputs */
+    [data-testid="stForm"] {
+        background-color: #FFFFFF !important;
+        border: 1px solid var(--border-subtle) !important;
+        border-radius: 16px !important;
+        padding: 1.5rem !important;
+        box-shadow: 0 4px 14px rgba(30, 22, 26, 0.025);
+    }
+    [data-testid="stWidgetLabel"] p {
+        color: #1E161A !important;
+        font-weight: 600 !important;
+        font-size: 0.88rem !important;
+    }
+
+    /* Outer wrapper for text, number, and selectbox */
+    [data-testid="stTextInputRootElement"],
+    [data-testid="stNumberInputContainer"],
+    [data-testid="stSelectbox"] [data-baseweb="select"] > div {
+        background-color: #FFFFFF !important;
+        border: 1.5px solid #DCD0D6 !important;
+        border-radius: 12px !important;
+        box-shadow: none !important;
+        overflow: hidden !important;
+    }
+
+    /* Force light background on EVERY nested div inside selectbox & inputs */
+    [data-testid="stTextInputRootElement"] *,
+    [data-testid="stNumberInputContainer"] > div,
+    [data-baseweb="input"],
+    [data-baseweb="input"] *,
+    [data-baseweb="base-input"],
+    [data-baseweb="base-input"] *,
+    [data-testid="stSelectbox"] [data-baseweb="select"] * {
+        background-color: #FFFFFF !important;
+        border-color: transparent !important;
+        box-shadow: none !important;
+        color: #1E161A !important;
+    }
+
+    /* Force Safari & BaseWeb light rendering on Selectbox */
+    [data-testid="stSelectbox"],
+    [data-testid="stSelectbox"] * {
+        color-scheme: light !important;
+        background-image: none !important;
+    }
+    [data-testid="stSelectbox"] [data-baseweb="select"] > div > div:last-child {
+        background: #F6EEF2 !important;
+        background-color: #F6EEF2 !important;
+        border-left: 1px solid #EAE2E6 !important;
+        padding: 0 0.75rem !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+    [data-testid="stSelectbox"] svg {
+        background: transparent !important;
+        background-color: transparent !important;
+        fill: #8A244E !important;
+        color: #8A244E !important;
+    }
+
+    /* Dropdown popover menu list */
+    [data-baseweb="popover"],
+    [data-baseweb="popover"] > div,
+    [data-baseweb="menu"],
+    ul[role="listbox"] {
+        background-color: #FFFFFF !important;
+        border: 1px solid #DCD0D6 !important;
+        border-radius: 12px !important;
+        box-shadow: 0 10px 25px rgba(30, 22, 26, 0.08) !important;
+    }
+    ul[role="listbox"] li,
+    [role="option"] {
+        background-color: #FFFFFF !important;
+        color: #1E161A !important;
+    }
+    ul[role="listbox"] li:hover,
+    [role="option"]:hover,
+    [aria-selected="true"][role="option"] {
+        background-color: #F6EEF2 !important;
+        color: #8A244E !important;
+        font-weight: 600 !important;
+    }
+
+    /* Input fields */
+    input, input[type="text"], input[type="number"], select {
+        background-color: #FFFFFF !important;
+        color: #1E161A !important;
+        font-size: 0.95rem !important;
+        font-weight: 500 !important;
+    }
+    input::placeholder {
+        color: #96878E !important;
+    }
+
+    /* Stepper - and + buttons */
+    [data-testid="stNumberInputStepDown"],
+    [data-testid="stNumberInputStepUp"] {
+        background-color: #F6EEF2 !important;
+        color: #8A244E !important;
+        border: none !important;
+        border-left: 1px solid #EAE2E6 !important;
+        border-radius: 0 !important;
+    }
+    [data-testid="stNumberInputStepDown"]:hover,
+    [data-testid="stNumberInputStepUp"]:hover {
+        background-color: #EDE0E6 !important;
+    }
+    [data-testid="stNumberInputStepDown"] svg,
+    [data-testid="stNumberInputStepUp"] svg {
+        background-color: transparent !important;
+        fill: #8A244E !important;
+        color: #8A244E !important;
+    }
+
+    /* Gradient Rebalancing Verdict Banner */
     .verdict-box {
-        background-color: var(--accent-forest);
-        color: #FFFFFF;
-        border-radius: 6px;
-        padding: 1.5rem;
+        background: linear-gradient(135deg, #8A244E 0%, #A83565 100%);
+        color: #FFFFFF !important;
+        border-radius: 16px;
+        padding: 1.55rem;
         margin-top: 1rem;
+        box-shadow: 0 8px 22px rgba(138, 36, 78, 0.16);
     }
     .verdict-title {
-        font-size: 0.75rem;
+        font-size: 0.74rem;
+        font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        opacity: 0.8;
-        margin-bottom: 0.4rem;
+        color: rgba(255, 255, 255, 0.85) !important;
+        margin-bottom: 0.45rem;
     }
-    .verdict-main {
-        font-size: 1.15rem;
-        font-weight: 500;
-        line-height: 1.45;
+    .verdict-main, .verdict-main strong, .verdict-main span {
+        font-size: 1.02rem;
+        font-weight: 400;
+        line-height: 1.55;
+        color: #FFFFFF !important;
+    }
+    .verdict-main strong {
+        font-weight: 700 !important;
     }
     .mono-pill {
-        font-family: 'JetBrains Mono', monospace;
-        background: rgba(255,255,255,0.14);
-        padding: 0.15rem 0.45rem;
-        border-radius: 4px;
-        font-size: 0.92rem;
+        background: rgba(255, 255, 255, 0.2);
+        color: #FFFFFF !important;
+        padding: 0.15rem 0.5rem;
+        border-radius: 6px;
+        font-size: 0.94rem;
+        font-weight: 600;
     }
 
-    /* Minimal Buttons */
-    .stButton > button {
-        background-color: var(--accent-forest) !important;
+    /* Pill Buttons */
+    .stButton > button, [data-testid="stFormSubmitButton"] > button {
+        background: linear-gradient(135deg, #8A244E 0%, #A32F5F 100%) !important;
         color: #FFFFFF !important;
         border: none !important;
-        border-radius: 4px !important;
-        padding: 0.55rem 1.2rem !important;
-        font-weight: 500 !important;
-        font-size: 0.88rem !important;
-        letter-spacing: 0.01em !important;
-        transition: opacity 0.2s ease;
+        border-radius: 999px !important;
+        padding: 0.65rem 1.4rem !important;
+        font-weight: 600 !important;
+        font-size: 0.9rem !important;
+        width: 100%;
+        box-shadow: 0 4px 12px rgba(138, 36, 78, 0.18);
+    }
+    .stButton > button p, [data-testid="stFormSubmitButton"] > button p {
+        color: #FFFFFF !important;
     }
     .stButton > button:hover {
-        opacity: 0.9;
+        opacity: 0.93;
+        transform: translateY(-1px);
     }
 
     /* Tab Styling */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 2rem;
+        gap: 1.5rem;
         border-bottom: 1px solid var(--border-subtle);
+        margin-bottom: 1.3rem;
     }
     .stTabs [data-baseweb="tab"] {
-        font-size: 0.92rem;
-        font-weight: 500;
-        color: var(--text-secondary);
-        padding-bottom: 0.8rem;
+        font-size: 0.95rem !important;
+        font-weight: 600 !important;
+        padding-bottom: 0.85rem !important;
+    }
+    .stTabs [data-baseweb="tab"] p {
+        color: #75646C !important;
+    }
+    .stTabs [aria-selected="true"] p {
+        color: #8A244E !important;
+        font-weight: 700 !important;
     }
     .stTabs [aria-selected="true"] {
-        color: var(--text-primary) !important;
-        border-bottom: 2px solid var(--accent-forest) !important;
+        border-bottom: 3px solid #8A244E !important;
     }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-
+# --- STATE INITIALIZATION ---
 if "portfolio" not in st.session_state:
     st.session_state.portfolio = {
         "SWDA (MSCI World)": 4500.0,
@@ -173,7 +333,7 @@ if "vault_items" not in st.session_state:
         {
             "name": "Vintage Designer Jacket",
             "amount": 140.0,
-            "category": "Fashion / FOMO",
+            "category": "Fashion",
             "hours_left": 54,
             "total_hours": 72,
             "status": "active",
@@ -186,22 +346,24 @@ if "saved_capital" not in st.session_state:
 if "impulses_defeated" not in st.session_state:
     st.session_state.impulses_defeated = 3
 
-
+# --- HEADER ---
 st.markdown(
     """
     <div class="vespera-header">
-        <div class="vespera-logo">◈ Vespera</div>
-        <div class="vespera-tagline">Behavioral Shield & Quantitative X-Ray</div>
+        <div class="vespera-logo">✦ vespera</div>
+        <div class="vespera-badge">Behavioral Shield & Quantitative X-Ray</div>
     </div>
     """,
     unsafe_allow_html=True,
 )
 
-
+# --- MAIN NAVIGATION ---
 tab1, tab2 = st.tabs(["01 · Behavioral Shield (FOMO Vault)", "02 · Portfolio X-Ray & Allocation"])
 
+# ==============================================================================
+# TAB 1: BEHAVIORAL SHIELD
+# ==============================================================================
 with tab1:
-    # KPI Row
     c1, c2, c3 = st.columns(3)
     with c1:
         st.markdown(
@@ -209,7 +371,7 @@ with tab1:
             <div class="v-card">
                 <div class="v-label">Capital Shielded from FOMO</div>
                 <div class="v-metric">€ {st.session_state.saved_capital:,.2f}</div>
-                <div class="v-sub">Unlocked and ready for quantitative allocation</div>
+                <div class="v-sub">Unlocked and ready for smart allocation</div>
             </div>
             """,
             unsafe_allow_html=True,
@@ -231,7 +393,7 @@ with tab1:
             f"""
             <div class="v-card">
                 <div class="v-label">Projected Future Value (5Y)</div>
-                <div class="v-metric" style="color: #0F3D3E;">€ {projected_5y:,.2f}</div>
+                <div class="v-metric" style="color: #8A244E !important;">€ {projected_5y:,.2f}</div>
                 <div class="v-sub">Compounded at 7.5% annualized market return</div>
             </div>
             """,
@@ -247,7 +409,7 @@ with tab1:
         with st.form("fomo_form", clear_on_submit=True):
             item_name = st.text_input("Desired Item", placeholder="e.g., Limited Edition Sneakers")
             item_amount = st.number_input("Amount (€)", min_value=10.0, max_value=10000.0, value=120.0, step=10.0)
-            item_cat = st.selectbox("Category", ["Fashion / FOMO", "Tech & Gadgets", "Lifestyle", "Other"])
+            item_cat = st.selectbox("Category", ["Fashion", "Beauty & Skincare", "Tech & Gadgets", "Lifestyle"])
             submitted = st.form_submit_button("Start Cooling-off Contract (72h)")
 
             if submitted and item_name.strip():
@@ -269,7 +431,7 @@ with tab1:
         active_items = [x for x in st.session_state.vault_items if x["status"] == "active"]
 
         if not active_items:
-            st.info("No impulse purchases pending. Your discipline is intact.")
+            st.info("No impulse purchases pending. Your discipline is glowing.")
         else:
             for idx, item in enumerate(active_items):
                 progress_pct = int(((item["total_hours"] - item["hours_left"]) / item["total_hours"]) * 100)
@@ -277,12 +439,12 @@ with tab1:
                     f"""
                     <div class="v-card">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-weight:500; font-size:1rem;">{item['name']}</span>
-                            <span style="font-family:'JetBrains Mono', monospace; font-weight:600; color:#B85042;">€ {item['amount']:.2f}</span>
+                            <span style="font-weight:600; font-size:1.05rem; color:#1E161A;">{item['name']}</span>
+                            <span style="font-weight:600; font-size:1.05rem; color:#D9534F !important;">€ {item['amount']:.2f}</span>
                         </div>
                         <div class="v-sub">{item['category']} · {item['hours_left']}h remaining until unlock</div>
-                        <div style="background:#E5E5E0; height:3px; width:100%; margin:0.9rem 0; border-radius:2px;">
-                            <div style="background:#0F3D3E; height:3px; width:{max(progress_pct, 15)}%;"></div>
+                        <div style="background:#F3E8ED; height:6px; width:100%; margin:0.95rem 0 0.2rem 0; border-radius:999px;">
+                            <div style="background:linear-gradient(90deg, #8A244E, #C95B86); height:6px; width:{max(progress_pct, 22)}%; border-radius:999px;"></div>
                         </div>
                     </div>
                     """,
@@ -299,7 +461,7 @@ with tab1:
         target_amount = active_items[0]["amount"] if active_items else 120.0
         target_label = active_items[0]["name"] if active_items else "Sample Impulse (€ 120)"
 
-        st.caption(f"5-year trajectory comparison for: **{target_label} (€ {target_amount:.2f})**")
+        st.caption(f"5-year trajectory comparison for: {target_label} (€ {target_amount:.2f})")
         df_opp = simulate_opportunity_cost(target_amount, years=5)
 
         fig_opp = go.Figure()
@@ -309,7 +471,9 @@ with tab1:
                 y=df_opp["Invested Capital (€)"],
                 mode="lines",
                 name="Invested Capital (+7.5% p.a.)",
-                line=dict(color="#0F3D3E", width=2.5),
+                line=dict(color="#8A244E", width=3.2),
+                fill="tozeroy",
+                fillcolor="rgba(138, 36, 78, 0.06)",
             )
         )
         fig_opp.add_trace(
@@ -318,27 +482,43 @@ with tab1:
                 y=df_opp["Residual Item Value (€)"],
                 mode="lines",
                 name="Residual Item Value (Depreciation)",
-                line=dict(color="#B85042", width=2, dash="dot"),
+                line=dict(color="#D9534F", width=2.4, dash="dot"),
             )
         )
         fig_opp.update_layout(
             paper_bgcolor="#FFFFFF",
             plot_bgcolor="#FFFFFF",
-            margin=dict(l=20, r=20, t=25, b=20),
-            height=340,
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
-            xaxis=dict(title="Time Horizon (Years)", showgrid=False, linecolor="#E5E5E0"),
-            yaxis=dict(title="Value (€)", gridcolor="#F0F0EC", linecolor="#E5E5E0"),
-            font=dict(family="Inter, sans-serif", color="#111111", size=12),
+            margin=dict(l=25, r=25, t=40, b=25),
+            height=355,
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.03,
+                xanchor="left",
+                x=0,
+                font=dict(family="Outfit, sans-serif", color="#1E161A", size=12),
+            ),
+            xaxis=dict(
+                title=dict(text="Time Horizon (Years)", font=dict(family="Outfit, sans-serif", color="#1E161A", size=12)),
+                tickfont=dict(family="Outfit, sans-serif", color="#685860", size=11),
+                showgrid=False,
+                linecolor="#EAE2E6",
+            ),
+            yaxis=dict(
+                title=dict(text="Value (€)", font=dict(family="Outfit, sans-serif", color="#1E161A", size=12)),
+                tickfont=dict(family="Outfit, sans-serif", color="#685860", size=11),
+                gridcolor="#F7F2F4",
+                linecolor="#EAE2E6",
+            ),
+            font=dict(family="Outfit, sans-serif", color="#1E161A", size=12),
         )
         st.plotly_chart(fig_opp, use_container_width=True)
 
-        # Direct bridge to Tab 2
         rebalance_preview = recommend_rebalance(st.session_state.portfolio, st.session_state.saved_capital)
         st.markdown(
             f"""
             <div class="verdict-box">
-                <div class="verdict-title">Quantitative Bridge · Recommended Action</div>
+                <div class="verdict-title">✦ Quantitative Bridge · Recommended Action</div>
                 <div class="verdict-main">
                     You have accumulated <span class="mono-pill">€ {st.session_state.saved_capital:.2f}</span> by resisting FOMO. 
                     Allocating it to <strong>{rebalance_preview['recommended_etf']}</strong> raises your Diversification Score 
@@ -349,18 +529,21 @@ with tab1:
             unsafe_allow_html=True,
         )
 
+
+# ==============================================================================
+# TAB 2: PORTFOLIO X-RAY & ALLOCATION
+# ==============================================================================
 with tab2:
     xray = compute_portfolio_xray(st.session_state.portfolio)
     rebalance = recommend_rebalance(st.session_state.portfolio, st.session_state.saved_capital)
 
-    # KPI Row
     k1, k2, k3 = st.columns(3)
     with k1:
         st.markdown(
             f"""
             <div class="v-card">
                 <div class="v-label">Diversification Score</div>
-                <div class="v-metric" style="color:#0F3D3E;">{xray['score']} <span style="font-size:1.1rem; color:#6E6E73;">/ 100</span></div>
+                <div class="v-metric" style="color:#8A244E !important;">{xray['score']} <span style="font-size:1.15rem; color:#685860 !important;">/ 100</span></div>
                 <div class="v-sub">Computed from true underlying equity weights</div>
             </div>
             """,
@@ -383,7 +566,7 @@ with tab2:
             f"""
             <div class="v-card">
                 <div class="v-label">Largest Single-Stock Exposure</div>
-                <div class="v-metric" style="color:#B85042;">{top_stock['Exposure (%)']:.2f}%</div>
+                <div class="v-metric" style="color:#D9534F !important;">{top_stock['Exposure (%)']:.2f}%</div>
                 <div class="v-sub">Hidden overlap concentrated in <strong>{top_stock['Asset']}</strong></div>
             </div>
             """,
@@ -408,11 +591,11 @@ with tab2:
             st.markdown(
                 f"""
                 <div class="verdict-box">
-                    <div class="verdict-title">Marginal HHI Optimizer</div>
+                    <div class="verdict-title">✦ Marginal HHI Optimizer</div>
                     <div class="verdict-main">
                         Deploy your shielded <span class="mono-pill">€ {st.session_state.saved_capital:.2f}</span> into:<br>
                         <strong>{rebalance['recommended_etf']}</strong><br><br>
-                        <span style="font-size:0.88rem; opacity:0.9;">
+                        <span style="font-size:0.9rem; opacity:0.92;">
                         HHI: {rebalance['current_hhi']:.5f} → {rebalance['new_hhi']:.5f} 
                         (+{rebalance['score_delta']} pts diversification)
                         </span>
@@ -441,27 +624,32 @@ with tab2:
                 orientation="h",
                 marker=dict(
                     color=[
-                        "#B85042" if val > 7.5 else "#0F3D3E"
+                        "#D9534F" if val > 7.5 else "#8A244E"
                         for val in top_8["Exposure (%)"]
-                    ]
+                    ],
+                    cornerradius=6,
                 ),
                 text=[f"{val:.2f}%" for val in top_8["Exposure (%)"]],
                 textposition="outside",
-                textfont=dict(family="JetBrains Mono, monospace", size=12, color="#111111"),
+                textfont=dict(family="Outfit, sans-serif", size=12, color="#1E161A"),
             )
         )
         fig_bar.update_layout(
             paper_bgcolor="#FFFFFF",
             plot_bgcolor="#FFFFFF",
-            margin=dict(l=10, r=45, t=15, b=20),
-            height=400,
+            margin=dict(l=15, r=55, t=20, b=25),
+            height=410,
             xaxis=dict(
-                title="True Weight in Total Portfolio (%)",
+                title=dict(text="True Weight in Total Portfolio (%)", font=dict(family="Outfit, sans-serif", color="#1E161A", size=12)),
+                tickfont=dict(family="Outfit, sans-serif", color="#685860", size=11),
                 showgrid=True,
-                gridcolor="#F0F0EC",
-                range=[0, max(top_8["Exposure (%)"]) * 1.22],
+                gridcolor="#F7F2F4",
+                range=[0, max(top_8["Exposure (%)"]) * 1.24],
             ),
-            yaxis=dict(showgrid=False),
-            font=dict(family="Inter, sans-serif", color="#111111", size=12),
+            yaxis=dict(
+                tickfont=dict(family="Outfit, sans-serif", color="#1E161A", size=12),
+                showgrid=False,
+            ),
+            font=dict(family="Outfit, sans-serif", color="#1E161A", size=12),
         )
         st.plotly_chart(fig_bar, use_container_width=True)
