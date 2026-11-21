@@ -1,10 +1,18 @@
+import html
+from datetime import datetime, timedelta
+
 import streamlit as st
 import plotly.graph_objects as go
 from engine import (
+    COOLING_OFF_HOURS,
+    ETF_DATA_NOTE,
     ETF_HOLDINGS,
+    RETURN_SCENARIOS,
     compute_portfolio_xray,
+    hours_remaining,
     recommend_rebalance,
     simulate_opportunity_cost,
+    simulate_return_scenarios,
 )
 
 # --- PAGE CONFIGURATION ---
@@ -334,8 +342,8 @@ if "vault_items" not in st.session_state:
             "name": "Vintage Designer Jacket",
             "amount": 140.0,
             "category": "Fashion",
-            "hours_left": 54,
-            "total_hours": 72,
+            "created_at": datetime.now() - timedelta(hours=18),
+            "total_hours": COOLING_OFF_HOURS,
             "status": "active",
         }
     ]
@@ -346,6 +354,9 @@ if "saved_capital" not in st.session_state:
 if "impulses_defeated" not in st.session_state:
     st.session_state.impulses_defeated = 3
 
+if "purchases_confirmed" not in st.session_state:
+    st.session_state.purchases_confirmed = 0
+
 # --- HEADER ---
 st.markdown(
     """
@@ -355,6 +366,10 @@ st.markdown(
     </div>
     """,
     unsafe_allow_html=True,
+)
+
+st.caption(
+    "Educational prototype — not financial advice. Demo data resets when the page is reloaded."
 )
 
 # --- MAIN NAVIGATION ---
@@ -419,8 +434,8 @@ with tab1:
                         "name": item_name.strip(),
                         "amount": float(item_amount),
                         "category": item_cat,
-                        "hours_left": 72,
-                        "total_hours": 72,
+                        "created_at": datetime.now(),
+                        "total_hours": COOLING_OFF_HOURS,
                         "status": "active",
                     },
                 )
@@ -434,15 +449,21 @@ with tab1:
             st.info("No impulse purchases pending. Your discipline is glowing.")
         else:
             for idx, item in enumerate(active_items):
-                progress_pct = int(((item["total_hours"] - item["hours_left"]) / item["total_hours"]) * 100)
+                hours_left = hours_remaining(item["created_at"], item["total_hours"])
+                progress_pct = int(((item["total_hours"] - hours_left) / item["total_hours"]) * 100)
+                status_text = (
+                    f"{hours_left:.0f}h remaining until unlock"
+                    if hours_left > 0
+                    else "Cooling-off complete: time to decide"
+                )
                 st.markdown(
                     f"""
                     <div class="v-card">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-weight:600; font-size:1.05rem; color:#1E161A;">{item['name']}</span>
+                            <span style="font-weight:600; font-size:1.05rem; color:#1E161A;">{html.escape(item['name'])}</span>
                             <span style="font-weight:600; font-size:1.05rem; color:#D9534F !important;">€ {item['amount']:.2f}</span>
                         </div>
-                        <div class="v-sub">{item['category']} · {item['hours_left']}h remaining until unlock</div>
+                        <div class="v-sub">{html.escape(item['category'])} · {status_text}</div>
                         <div style="background:#F3E8ED; height:6px; width:100%; margin:0.95rem 0 0.2rem 0; border-radius:999px;">
                             <div style="background:linear-gradient(90deg, #8A244E, #C95B86); height:6px; width:{max(progress_pct, 22)}%; border-radius:999px;"></div>
                         </div>
@@ -450,11 +471,23 @@ with tab1:
                     """,
                     unsafe_allow_html=True,
                 )
-                if st.button(f"Forfeit Purchase & Transfer € {item['amount']:.0f} to Portfolio", key=f"win_{idx}"):
-                    item["status"] = "won"
-                    st.session_state.saved_capital += item["amount"]
-                    st.session_state.impulses_defeated += 1
-                    st.rerun()
+                btn_invest, btn_buy = st.columns(2)
+                with btn_invest:
+                    if st.button(f"Skip it & invest € {item['amount']:.0f}", key=f"win_{idx}"):
+                        item["status"] = "won"
+                        st.session_state.saved_capital += item["amount"]
+                        st.session_state.impulses_defeated += 1
+                        st.rerun()
+                with btn_buy:
+                    if st.button(
+                        "I still want it · confirm purchase",
+                        key=f"buy_{idx}",
+                        disabled=hours_left > 0,
+                        help="Available only after the cooling-off period ends.",
+                    ):
+                        item["status"] = "purchased"
+                        st.session_state.purchases_confirmed += 1
+                        st.rerun()
 
     with col_right:
         st.markdown("#### Real Opportunity Cost Analysis")
@@ -462,18 +495,41 @@ with tab1:
         target_label = active_items[0]["name"] if active_items else "Sample Impulse (€ 120)"
 
         st.caption(f"5-year trajectory comparison for: {target_label} (€ {target_amount:.2f})")
-        df_opp = simulate_opportunity_cost(target_amount, years=5)
+        target_category = active_items[0]["category"] if active_items else "Fashion"
+        df_opp = simulate_opportunity_cost(target_amount, years=5, category=target_category)
+        df_sc = simulate_return_scenarios(target_amount, years=5)
+        low_rate, base_rate, high_rate = (RETURN_SCENARIOS[k] * 100 for k in ("Low", "Base", "High"))
 
         fig_opp = go.Figure()
+        fig_opp.add_trace(
+            go.Scatter(
+                x=df_sc["Years"],
+                y=df_sc["Low"],
+                mode="lines",
+                line=dict(width=0),
+                showlegend=False,
+                hoverinfo="skip",
+            )
+        )
+        fig_opp.add_trace(
+            go.Scatter(
+                x=df_sc["Years"],
+                y=df_sc["High"],
+                mode="lines",
+                line=dict(width=0),
+                fill="tonexty",
+                fillcolor="rgba(138, 36, 78, 0.12)",
+                name=f"Scenario range ({low_rate:.1f}%–{high_rate:.1f}% p.a.)",
+                hoverinfo="skip",
+            )
+        )
         fig_opp.add_trace(
             go.Scatter(
                 x=df_opp["Years"],
                 y=df_opp["Invested Capital (€)"],
                 mode="lines",
-                name="Invested Capital (+7.5% p.a.)",
+                name=f"Base case (+{base_rate:.1f}% p.a.)",
                 line=dict(color="#8A244E", width=3.2),
-                fill="tozeroy",
-                fillcolor="rgba(138, 36, 78, 0.06)",
             )
         )
         fig_opp.add_trace(
@@ -512,7 +568,11 @@ with tab1:
             ),
             font=dict(family="Outfit, sans-serif", color="#1E161A", size=12),
         )
-        st.plotly_chart(fig_opp, use_container_width=True)
+        st.plotly_chart(fig_opp, width="stretch")
+        st.caption(
+            "Illustrative scenarios, not forecasts. Item value uses an assumed "
+            f"annual depreciation for the category “{target_category}”."
+        )
 
         rebalance_preview = recommend_rebalance(st.session_state.portfolio, st.session_state.saved_capital)
         st.markdown(
@@ -579,6 +639,7 @@ with tab2:
     with p_left:
         st.markdown("#### Declared ETF Holdings")
         st.caption("Adjust your ETF allocations to observe real-time shifts in underlying concentration.")
+        st.caption(ETF_DATA_NOTE)
 
         updated_portfolio = {}
         for etf_name, current_val in st.session_state.portfolio.items():
@@ -652,4 +713,10 @@ with tab2:
             ),
             font=dict(family="Outfit, sans-serif", color="#1E161A", size=12),
         )
-        st.plotly_chart(fig_bar, use_container_width=True)
+        st.plotly_chart(fig_bar, width="stretch")
+
+st.markdown("<br>", unsafe_allow_html=True)
+st.caption(
+    "Vespera is an educational prototype. Nothing shown here is investment advice or a recommendation "
+    "to buy or sell any financial product."
+)
